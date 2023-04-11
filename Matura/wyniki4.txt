@@ -1,0 +1,4 @@
+a siana 49600 zoledzi 10200
+ b 28
+ c tylko sianem 64 tylko zoledziami 26
+ 

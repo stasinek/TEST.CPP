@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!-- C++Builder XML Project -->
+<PROJECT>
+  <MACROS>
+    <VERSION value="BCB.05.03"/>
+    <PROJECT value="Project1.exe"/>
+    <OBJFILES value="main.obj"/>
+    <RESFILES value=""/>
+    <DEFFILE value=""/>
+    <RESDEPEN value="$(RESFILES)"/>
+    <LIBFILES value=""/>
+    <LIBRARIES value=""/>
+    <SPARELIBS value=""/>
+    <PACKAGES value="USRPKG.bpi dclusr50.bpi"/>
+    <PATHCPP value=".;"/>
+    <PATHPAS value=".;"/>
+    <PATHRC value=".;"/>
+    <PATHASM value=".;"/>
+    <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
+    <RELEASELIBPATH value="$(BCB)\lib\release"/>
+    <LINKER value="ilink32"/>
+    <USERDEFINES value="_DEBUG"/>
+    <SYSDEFINES value="NO_STRICT;_NO_VCL;_RTLDLL"/>
+    <MAINSOURCE value="Project1.bpf"/>
+    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Include\&quot;;&quot;C:\Program Files\Microsoft SDKs\Windows\v7.0A\Include\&quot;;&quot;C:\Program Files\Borland\CBuilder5\Include\VCL\&quot;"/>
+    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Lib\&quot;;&quot;C:\Program Files\Borland\CBuilder5\Lib\Obj\&quot;"/>
+    <WARNINGS value="-w-par"/>
+  </MACROS>
+  <OPTIONS>
+    <CFLAG1 value="-Od -Vx -Ve -X- -ps -a8 -6 -b- -k -y -v -vi- -tW -tWM -c"/>
+    <PFLAGS value="-$YD -$W -$A8 -v -JPHNE -M"/>
+    <RFLAGS value=""/>
+    <AFLAGS value="/mx /w2 /zd"/>
+    <LFLAGS value="-D&quot;&quot; -aa -Tpe -x -Gn -v"/>
+  </OPTIONS>
+  <LINKER>
+    <ALLOBJ value="c0w32.obj $(OBJFILES)"/>
+    <ALLRES value="$(RESFILES)"/>
+    <ALLLIB value="$(LIBFILES) $(LIBRARIES) import32.lib cw32mti.lib"/>
+  </LINKER>
+  <IDEOPTIONS>
+[Version Info]
+IncludeVerInfo=0
+AutoIncBuild=0
+MajorVer=1
+MinorVer=0
+Release=0
+Build=0
+Debug=0
+PreRelease=0
+Special=0
+Private=0
+DLL=0
+Locale=1045
+CodePage=1250
+
+[Version Info Keys]
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
+LegalTrademarks=
+OriginalFilename=
+ProductName=
+ProductVersion=1.0.0.0
+Comments=
+
+[HistoryLists\hlIncludePath]
+Count=4
+Item0=C:\Program Files\Borland\CBuilder5\Include\;C:\Program Files\Microsoft SDKs\Windows\v7.0A\Include\;C:\Program Files\Borland\CBuilder5\Include\VCL\
+Item1=C:\Program Files\Borland\CBuilder5\Include;C:\Program Files\Microsoft SDKs\Windows\v7.0A\Include;C:\Program Files\Borland\CBuilder5\Include\VCL
+Item2=D:\prc++\PROGS\DEVPP\GLUT;$(BCB)\include;$(BCB)\include\vcl;D:\prc++\x86_libraries
+Item3=D:\prc++\PROGS\DEVPP\GLUT;$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=4
+Item0=C:\Program Files\Borland\CBuilder5\Lib\;C:\Program Files\Borland\CBuilder5\Lib\Obj\
+Item1=C:\Program Files\Borland\CBuilder5\Lib;C:\Program Files\Borland\CBuilder5\Lib\Obj
+Item2=$(BCB)\Projects\Lib;D:\prc++\PROGS\DEVPP\GLUT;$(BCB)\lib\obj;$(BCB)\lib;D:\prc++\x86_libraries\GL
+Item3=$(BCB)\Projects\Lib;D:\prc++\PROGS\DEVPP\GLUT;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
+[Debugging]
+DebugSourceDirs=$(BCB)\source\vcl
+
+[Parameters]
+RunParams=
+HostApplication=
+RemoteHost=
+RemotePath=
+RemoteDebug=0
+
+[Compiler]
+ShowInfoMsgs=0
+LinkDebugVcl=0
+  </IDEOPTIONS>
+</PROJECT>
