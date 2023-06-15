@@ -51,7 +51,7 @@ qrc_*.*
 # Map files
 *.mbr
 *.tds
-*.map
+*.map
 *.sdf
 *.pdb
 *.idb
