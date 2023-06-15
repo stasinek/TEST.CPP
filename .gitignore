@@ -47,7 +47,7 @@ moc_*.*
 qrc_*.*
 *Release/*
 *Debug/*
-!EXE/*
+#!EXE/*
 # Map files
 *.mbr
 *.tds
@@ -203,15 +203,15 @@ ehthumbs_vista.db
 # Folder config file
 [Dd]esktop.ini
 *.mbr
-/Desktop_*/*.*
-/build_*/*.*
-/Qt_*/*.*
-/LLVM_*/*.*
-/Visual_*/*.*
-/release/*.*
-/debug/*.*
-/RELEASE/*.*
-/DEBUG/*.*
+Desktop_*/*.*
+build_*/*.*
+Qt_*/*.*
+LLVM_*/*.*
+Visual_*/*.*
+release/*.*
+debug/*.*
+RELEASE/*.*
+DEBUG/*.*
 *.tlog
 *.err
 *.user*
