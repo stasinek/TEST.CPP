@@ -231,6 +231,16 @@ do
 
  switch (format)
 { 	case DEC: break;
+	case BIN:
+	// determine sign here
+		switch (str[first]) {
+			case '0':
+			negative = false; break;
+			case '1':
+			negative = true; break;
+			default:
+			first = last + 1; break; // handle errror we made some mistake!
+		}
 	case HEX:
 	//determine sign 0x0000-0x7000 positive, 0x8000-0xF000 is negative
 		switch (str[first]) {
@@ -260,16 +270,6 @@ do
 			default: return 0; // ERROR we made some mistake!
 			}
 		break;
-	case BIN:
-	// determine sign here
-		switch (str[first]) {
-			case '0':
-			negative = false; break;
-			case '1':
-			negative = true; break;
-			default:
-			first = last + 1; break; // handle errror we made some mistake!
-		}
 	default:
 	first = last + 1; break; // handle errror we made some mistake!
 }
@@ -284,7 +284,17 @@ if (count > 0)
 {
 	if (format = DEC)
 	{
-		if (count > 11) return 0; // ERROR handler
+		if (count > 10) return 0; // ERROR handler
+		else
+			{
+			for (pos = 0; pos < count; pos++)
+				stripped[pos] = str[last-pos];
+			}
+	}
+	else
+	if (format = BIN)
+	{
+		if (count > 32) return 0; // ERROR handler
 		else
 			{
 			for (pos = 0; pos < count; pos++)
@@ -296,19 +306,9 @@ if (count > 0)
 	{
 		if (count >  8) return 0; // ERROR handler
 		else
-			{ 
-			for (pos = 0; pos < count; pos++) 
-				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
-			}
-	}
-	else
-	if (format = BIN) 
-	{
-		if (count > 32) return 0; // ERROR handler
-		else
 			{
 			for (pos = 0; pos < count; pos++)
-				stripped[pos] = str[last-pos];
+				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
 			}
 	}
 }
@@ -316,35 +316,35 @@ else return 0; // ERROR handler
 
 if (count > 0)
 {
-	if (format = BIN) 
+	if (format = DEC)
 	{
 		if (negative)
-			{
-			for (pos = 0; pos < count; pos++) 
-				result -= table_bin[pos][ stripped[pos] - base_bin_ascii ];
-			}
-		else 
-			{
-			for (pos = 0; pos < count; pos++) 
-				result += table_bin[pos][ stripped[pos] - base_bin_ascii ];
-			}
-	}
-	else
-	if (format = DEC) 
-	{
-		if (negative) 
 			{
 			for (pos = 0; pos < count; pos++)
 				result -= table_dec[pos][ stripped[pos] - base_dec_ascii ];
 			}
-		else 
+		else
 			{
 			for (pos = 0; pos < count; pos++)
 				result += table_dec[pos][ stripped[pos] - base_dec_ascii ];
 			}
 	}
 	else
-	if (format = HEX) 
+	if (format = BIN)
+	{
+		if (negative)
+			{
+			for (pos = 0; pos < count; pos++)
+				result -= table_bin[pos][ stripped[pos] - base_bin_ascii ];
+			}
+		else
+			{
+			for (pos = 0; pos < count; pos++)
+				result += table_bin[pos][ stripped[pos] - base_bin_ascii ];
+			}
+	}
+	else
+	if (format = HEX)
 	{
 		if (negative)
 		for (pos = 0; pos < count; pos++) 
@@ -388,9 +388,9 @@ int main(int argc, char** argv) {
 		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
 
+		TEST("4294967295")
 		TEST("21")
 		TEST("124")
-		TEST("40200000040")
 		TEST("-1212")
 		TEST("-323-1")
 		TEST("0x24549ABC")
