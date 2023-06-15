@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
+// -----------------------------------------------------------------------------
 
 	const int table_bin[32][2] = {
 		{0,1},
@@ -36,6 +36,8 @@
 		{0,536870912},
 		{0,1073741824},
 		{0,0/*2147483648*/}};
+// -----------------------------------------------------------------------------
+
 	const int table_dec[10][10] = {
 		{0,1,2,3,4,5,6,7,8,9},
 		{0,10,20,30,40,50,60,70,80,90},
@@ -47,6 +49,8 @@
 		{0,10000000,20000000,30000000,40000000,50000000,60000000,70000000,80000000,90000000},
 		{0,100000000,200000000,300000000,400000000,500000000,600000000,700000000,800000000,900000000},
 		{0,1000000000,2000000000,3000000000,4000000000,5000000000,6000000000,7000000000,8000000000,9000000000}};
+// -----------------------------------------------------------------------------
+
 	const int table_hex[8][16] = {
 		{0,0x00000001,0x00000002,0x0000003,0x00000004,0x00000005,0x00000006,0x00000007,0x00000008,0x00000009,0x0000000A,0x0000000B,0x0000000C,0x0000000D,0x0000000E,0x0000000F},
 		{0,0x00000010,0x00000020,0x0000030,0x00000040,0x00000050,0x00000060,0x00000070,0x00000080,0x00000090,0x000000A0,0x000000B0,0x000000C0,0x000000D0,0x000000E0,0x000000F0},
@@ -57,36 +61,41 @@
 		{0,0x01000000,0x02000000,0x0300000,0x04000000,0x05000000,0x06000000,0x07000000,0x08000000,0x09000000,0x0A000000,0x0B000000,0x0C000000,0x0D000000,0x0E000000,0x0F000000},
 		{0,0x10000000,0x20000000,0x3000000,0x40000000,0x50000000,0x60000000,0x70000000,0x80000000,0x90000000,0xA0000000,0xB0000000,0xC0000000,0xD0000000,0xE0000000,0xF0000000},
 	};
+// -----------------------------------------------------------------------------
 /*
-How about basic idea? 
+How about basic idea?
 */
+// -----------------------------------------------------------------------------
+
 int atoi_reference(const char *astr)
 {
 // maybe lated :D
-// copy paste whatever you want to compare with!	
+// copy paste whatever you want to compare with!
 return atoi(astr);
 }
+// -----------------------------------------------------------------------------
 /*
-How about NOT using multiplication? But lookup tables? 
+How about NOT using multiplication? But lookup tables?
 */
+// -----------------------------------------------------------------------------
+
 int atoi_lookup(const char *astr)
 {
 // on 32bit platform limit is 1 sign, 2 for hex,bin notation: 0x,0b + 8,10,32 digits = 11-34
-// but if you want filter out, trim mush allow higher limit  
+// but if you want filter out, trim mush allow higher limit
 #define MY_POS_LIMIT 100
-// on 32bit platform parameters are send via stack, 
+// on 32bit platform parameters are send via stack,
 //this allow str to be put into register!
-const char *str = astr; 
-
+const char *str = astr;
 // 3 lines of code, decission making purpose, allow to pick table of choice dec,hex,bin
-const char base_bin_ascii = '0'; 
-const char last_bin_ascii = '1'; 
+const char base_bin_ascii = '0';
+const char last_bin_ascii = '1';
 const char base_dec_ascii = '0'; // both for HEX and DEC! 48='0'
 const char last_dec_ascii = '9'; // both for HEX and DEC! 58='9'
 const char base_hex_ascii = 'A'; // 65='A'
 const char last_hex_ascii = 'F'; // 70='F'
 //const char base_hex_ascii = 'a'; // 97='a'
-//const char last_hex_ascii = 'f'; // 102='f' 
+//const char last_hex_ascii = 'f'; // 102='f'
 // we could mask bit nr 5 (32) to make upper letters so one range is enough!
 // also x and b will turn into -> X and B
 
@@ -96,16 +105,16 @@ const char last_hex_ascii = 'F'; // 70='F'
 // first >= last means there is no valid number anywhere in string, even single digit!
 int pos = 0, first = 0, last = -1, count = 0, result = 0;
 
-//if negative sign is detected or first bit 2's complement notation is detected 
-// -1 or 0b1000 to 0x1111 HEX or 0x8000 to FFFF.. BIN 
-bool negative = false; 
+//if negative sign is detected or first bit 2's complement notation is detected
+// -1 or 0b1000 to 0x1111 HEX or 0x8000 to FFFF.. BIN
+bool negative = false;
 enum __format_enum {BIN=0,DEC=1,HEX=2} format; // bin,dec,hex;
 format = DEC; //default important enables detection of dec directly or 0x, 0b format preffix
 
 do
 	{ if (str[pos]=='\0') break; 
 	  else last++; // lengh++
-	  
+
 	  // we could make all letters upper case b->B, x->X and a-f -> A-F here, numbers wont be affected
 	  // we could copy string into buffer but astr is const so we will starting first valid digit!	  
 	  // 48='0',9 .... 65='A',B,C if lower <48 cant be > 65 dont have time to think about it now.. think?
@@ -127,7 +136,7 @@ do
 	  	if (str[pos] > last_dec_ascii) 
 	  	 	first = pos; // trim invalid char for dec
 		}
-	  if (format==HEX)	
+	  if (format==HEX)
 	  	{
 	  	if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) 
 	  		{ last = pos; break; } // trim invalid char for hex
@@ -155,18 +164,18 @@ do
 		   } 
 		   else 
 		   { 
-			first = last+1; 
+			first = last+1;
 			break; 
 		   }
 		}   // change format or exit to handle error
 	  if (str[pos] && 0xDF == 'B') 
 	  	{ 
-	  	 if (str[first]=='0') 
+	  	 if (str[first]=='0')
 		   { 
 		   	negative = false; 
 			format = BIN; 
 			} 
-		else 
+		else
 			{ 
 			first = last+1; break; 
 			}
@@ -211,7 +220,7 @@ do
 			negative = false; break;
 			case '1':
 			negative = true; break;
-			default: 
+			default:
 			first = last + 1; break; // handle errror we made some mistake! 
 		}
 	default: 
@@ -226,20 +235,20 @@ char *stripped_vatch = (char*)stripped;
 // also copy string here to buffer and make it upper case if HEX
 if (count > 0)
 {
-	if (format = DEC) 
+	if (format = DEC)
 	{
 		if (count > 11) return 0; // ERROR handler
-		else 
+		else
 			{
-			for (pos = 0; pos < count; pos++) 
+			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos];
 			}
 	}
 	else
-	if (format = HEX) 
+	if (format = HEX)
 	{
 		if (count >  8) return 0; // ERROR handler
-		else 
+		else
 			{ 
 			for (pos = 0; pos < count; pos++) 
 				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
@@ -251,7 +260,7 @@ if (count > 0)
 		if (count > 32) return 0; // ERROR handler
 		else
 			{
-			for (pos = 0; pos < count; pos++) 
+			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos];
 			}
 	}
@@ -278,12 +287,12 @@ if (count > 0)
 	{
 		if (negative) 
 			{
-			for (pos = 0; pos < count; pos++) 
+			for (pos = 0; pos < count; pos++)
 				result -= table_dec[pos][ stripped[pos] - base_dec_ascii ];
 			}
 		else 
 			{
-			for (pos = 0; pos < count; pos++) 
+			for (pos = 0; pos < count; pos++)
 				result += table_dec[pos][ stripped[pos] - base_dec_ascii ];
 			}
 	}
@@ -298,38 +307,40 @@ if (count > 0)
 			else 
 				result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
 			}
-		else 
+		else
 			{
-			if (stripped[pos]>=base_hex_ascii) 
+			if (stripped[pos]>=base_hex_ascii)
 				result -= table_hex[pos][ stripped[pos] - base_hex_ascii ];
-			else 
+			else
 				result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
 			}
-		
+
 	return result;
 	}
 }
 else return 0; // ERROR handler
-// 
+//
 return result;
 }
-
+// -----------------------------------------------------------------------------
 /*
 Speed test
 */
+// -----------------------------------------------------------------------------
+
 int main(int argc, char** argv) {
-	
+
 		int TEST_stdlib_result, TEST_my_result;
 		char *TEST_str;
 
-		#define TEST(__ATEST_STR)\
-		TEST_str = __ATEST_STR;\
-		TEST_my_result = atoi_lookup(TEST_str);\
-                TEST_stdlib_result = atoi_reference(TEST_str);\
-		printf("%s %d %d",TEST_str,TEST_stdlib_result, TEST_my_result);\
-		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");\
+		#define TEST(__ATEST_STR)                                       \
+		TEST_str = __ATEST_STR;                                         \
+		TEST_my_result = atoi_lookup(TEST_str);                         \
+                TEST_stdlib_result = atoi_reference(TEST_str);                  \
+		printf("%s %d %d",TEST_str,TEST_stdlib_result, TEST_my_result); \
+		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
-		
+
 		TEST("21")
 		TEST("124")
 		TEST("-1212")
@@ -338,24 +349,27 @@ int main(int argc, char** argv) {
 		TEST("0b2134234")
 		TEST("21b0xas")
 
+
+                char *testy[10] = {"12435567","-121244","0x00233543","0b0101010101010101","0x4134",
+                                   "0xFFFFFFFF","99999999","-999999999","1","dsx120x12"};
                 int old_time, end_time, runda;
+                int i;
 
-                char *testy[10] = {"12435567","-121244","0x00233543","0b0101010101010101","0x4134","0xFFFFFFFF","99999999","-999999999","1","dsx120x12"};
+                #define TEST_SPEED(TEST_NAME,TEST_FUNC)                         \
+                printf("TESTING SPEED %s..\n\r",TEST_NAME);                     \
+                old_time = time(NULL);                                          \
+                for (runda = 0; runda < 20000000; runda++)                      \
+                for (i = 0; i < 10; i++) TEST_FUNC;                             \
+                end_time = time(NULL);                                          \
+                printf("%s time = %d\n\r",TEST_NAME,end_time-old_time);
 
-                printf("TESTING SPEED MY..\n\r");
-                old_time = time(NULL);
-                for (runda = 0; runda < 20000000; runda++)
-                for (int i = 0; i < 10; i++) atoi(testy[i]);
-                end_time = time(NULL);
-                printf("MY time = %d\n\r",end_time-old_time);
-
-                printf("TESTING SPEED STDLIB...\n\r");
-                old_time = time(NULL);
-                for (runda = 0; runda < 20000000; runda++)
-                for (int i = 0; i < 10; i++) atoi_reference(testy[i]);
-                end_time = time(NULL);
-                printf("STDLIB time = %d\n\r",end_time-old_time);
-
+                TEST_SPEED("STDLIB",atoi(testy[i]);)
+                TEST_SPEED("LOOKUP",atoi_lookup(testy[i]);)
+                //TEST_SPEED("REFERENCE",atoi_reference(testy[i]);)
                 system("pause");
+
 	return 0;
 }
+// -----------------------------------------------------------------------------
+
+
