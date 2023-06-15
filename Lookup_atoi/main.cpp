@@ -337,18 +337,20 @@ int main(int argc, char** argv) {
 		TEST_str = __ATEST_STR;                                         \
 		TEST_my_result = atoi_lookup(TEST_str);                         \
                 TEST_stdlib_result = atoi_reference(TEST_str);                  \
-		printf("%s %d %d",TEST_str,TEST_stdlib_result, TEST_my_result); \
+		printf("%20s\t%12d\t%12d",TEST_str,TEST_stdlib_result, TEST_my_result); \
 		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
 
 		TEST("21")
 		TEST("124")
+		TEST("40200000040")
 		TEST("-1212")
 		TEST("-323-1")
-		TEST("0x12454")
-		TEST("0b2134234")
-		TEST("21b0xas")
-
+		TEST("0x24549ABC")
+		TEST("0b02134234")
+		TEST("0b001010101010101")
+		TEST("2x2134234")
+		TEST("-21b00x42")
 
                 char *testy[10] = {"12435567","-121244","0x00233543","0b0101010101010101","0x4134",
                                    "0xFFFFFFFF","99999999","-999999999","1","dsx120x12"};
