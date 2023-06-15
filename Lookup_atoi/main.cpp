@@ -142,7 +142,7 @@ do
 	  else
       if (format==DEC) // if we already determined DEC format, any "123bad" character is cut off, break;
 	  	    {
-	        if (str[pos] && 0xDF == 'X')    // "0X" = HEX, comparison as upper letters
+	        if ((str[pos] & 0xDF) == 'X')    // "0X" = HEX, comparison as upper letters
 	  	        {
 		        if (str[first]=='0')        // 0X scenario, HEX, ignore '-' sign will be deterimed by compliment bits
 		            {
@@ -158,7 +158,7 @@ do
 		            }
 		        }
             else
-	        if (str[pos] && 0xDF == 'B')    // "0B" = BIN, comparison as upper letters
+	        if ((str[pos] & 0xDF) == 'B')    // "0B" = BIN, comparison as upper letters
                 {
 	            if (str[first]=='0')
 		            {
@@ -230,17 +230,21 @@ do
 	} while (++pos < MY_POS_LIMIT);
 
  switch (format)
-{ 	case DEC: break;
+{ 	case DEC:
+    break;
 	case BIN:
 	// determine sign here
 		switch (str[first]) {
 			case '0':
-			negative = false; break;
+			negative = false;
+            break;
 			case '1':
-			negative = true; break;
+			negative = true;
+            break;
 			default:
-			first = last + 1; break; // handle errror we made some mistake!
+			return 0; // handle ERROR we made some mistake!
 		}
+    break;
 	case HEX:
 	//determine sign 0x0000-0x7000 positive, 0x8000-0xF000 is negative
 		switch (str[first]) {
@@ -347,9 +351,9 @@ if (count > 0)
 	if (format = HEX)
 	{
 		if (negative)
-		for (pos = 0; pos < count; pos++) 
+		for (pos = 0; pos < count; pos++)
 			{
-			if (stripped[pos]>=base_hex_ascii) 
+			if (stripped[pos]>=base_hex_ascii)
 				result -= table_hex[pos][ stripped[pos] - base_hex_ascii ];
 			else 
 				result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
@@ -388,13 +392,15 @@ int main(int argc, char** argv) {
 		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
 
+		TEST("0b10")
 		TEST("4294967295")
 		TEST("21")
 		TEST("124")
 		TEST("-1212")
 		TEST("-323-1")
+		TEST("abc-323-1")
 		TEST("0x24549ABC")
-		TEST("0b02134234")
+		TEST("0b12134234")
 		TEST("0b001010101010101")
 		TEST("2x2134234")
 		TEST("-21b00x42")
