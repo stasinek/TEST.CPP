@@ -109,7 +109,7 @@ int pos = 0, first = 0, last = -1, count = 0, result = 0;
 // -1 or 0b1000 to 0x1111 HEX or 0x8000 to FFFF.. BIN
 bool negative = false;
 enum __format_enum {BIN=0,DEC=1,HEX=2,NON=3} format; // bin,dec,hex;
-format = DEC; //default important enables detection of dec directly or 0x, 0b format preffix
+format = NON; //default important enables detection of dec directly or 0x, 0b format preffix
 
 do
 	{ if (str[pos]=='\0')
@@ -119,28 +119,37 @@ do
 	  if (format==NON) // before we determine format, start with NON but as if it was DEC but just trim out first character
 	  	    {
   	        if (str[pos] == '-')            // this is for first time, sign negative, format DEC
-                { first = pos+1; format = DEC; negative = true; }
+                {
+                 first = pos+1; format = DEC; negative = true;
+                }
             else
 	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
-	  	 	    { first = pos+1; }          // trim invalid char for dec
+	  	 	    {
+                 first = pos+1;
+                }
 		    else
 	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    { first = pos+1; }          // trim invalid char for dec
+	  		    {
+                 first = pos+1;
+                }
             else                            // number is in range 0-9, change to DEC, so next invalid character out of range will this time cause break
-                { first = pos+0; format = DEC; }
+                {
+                 first = pos+0; last = pos+0; format = DEC;
+                }
                                             // here ^^ first correct digital number was detected "garbage1324whatever" so change format to DEC
                                             // do next time if garbage is in string just cut out rest, keep only that first number to process
 		    }
 	  else
       if (format==DEC) // if we already determined DEC format, any "123bad" character is cut off, break;
 	  	    {
-	        if (str[pos] && 0xDF == 'X') // "0X" = HEX, comparison as upper letters
+	        if (str[pos] && 0xDF == 'X')    // "0X" = HEX, comparison as upper letters
 	  	        {
 		        if (str[first]=='0')        // 0X scenario, HEX, ignore '-' sign will be deterimed by compliment bits
 		            {
 		   	        negative = false;
-			        format = HEX;
-                    first= pos+1;           // first "0x"=2bytes doesn't represent value, start at next byte
+			        format   = HEX;
+                    first    = pos+1;
+                    last     = pos+1;       // first "0x"=2bytes doesn't represent value, start at next byte
 		            }
 	            else                        // 121x823 scenario, we found "X" but not 0X rather 1234X so format is DEC ends here
 		            {
@@ -148,13 +157,15 @@ do
 			        break;
 		            }
 		        }
+            else
 	        if (str[pos] && 0xDF == 'B')    // "0B" = BIN, comparison as upper letters
                 {
 	            if (str[first]=='0')
 		            {
 		            negative = false;
-		            format = BIN;
-                    first= pos+1;           // first "0b"=2bytes doesn't represent value, start at next byte
+		            format   = BIN;
+                    first    = pos+1;
+                    last     = pos+1;       // first "0b"=2bytes doesn't represent value, start at next byte
 		            }
 	            else                        // 123b01010 scenario, we found "B" but not "0B" rather 1234B so format is DEC, ends here
 		            {
@@ -164,33 +175,58 @@ do
 		        }
             else
 	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
-	  	 	    { last = pos-1; break; }    // trim invalid char for dec
+	  	 	    {
+                 last = pos-1; break;
+                }                           // trim invalid char for dec
 		    else
 	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    { last = pos-1; break; }    // trim invalid char for dec
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid char for dec
+            else
+                {
+                 last = pos;
+                }                           // number is within range
 		    }
       else
-	  if (format==BIN) // if we passed already "0B" check out ranges of 0B010101 next characters
+	  if (format==BIN)                      // if we passed already "0B" check out ranges of 0B010101 next characters
 	  	    {
 	  	    if (str[pos] > last_bin_ascii)  // higher than '1'
-	  	 	    { last = pos-1; break; }    // trim invalid char for bin
+	  	 	    {
+                 last = pos-1; break;
+                }                           // trim invalid char for bin
 		    else
 	  	    if (str[pos] < base_bin_ascii)  // lower than '0'
-	  		    { last = pos-1; break; }    // trim invalid char for bin
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid char for bin
+            else
+                {
+                 last = pos;
+                }                           // number is within range
 		    }
       else
 	  if (format==HEX)
 	  	    {
 	  	    if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) // range between 0-9 and A-F
-	  		    { last = pos-1; break; }    // trim invalid chars for hex
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid chars for hex
 		    else
 		    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    { last = pos-1; break; }    // trim invalid chars for dec (subpart of hex as well)
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid chars for dec (subpart of hex as well)
 	  	    else
 		    if (str[pos] > last_hex_ascii)  // higher han 'F'
-	  	 	    { last = pos-1; break; }    // trim invalid chars for hex
+	  	 	    {
+                 last = pos-1; break;
+                }                           // trim invalid chars for hex
+            else
+                {
+                 last = pos;
+                }                           // number is within range
 		    }
- 	  last++; // lengh++
 	} while (++pos < MY_POS_LIMIT);
 
  switch (format)
@@ -371,7 +407,7 @@ int main(int argc, char** argv) {
                 #define TEST_SPEED(TEST_NAME,TEST_FUNC)                         \
                 printf("TESTING SPEED %s..\n\r",TEST_NAME);                     \
                 old_time = time(NULL);                                          \
-                for (runda = 0; runda < 20000000; runda++)                      \
+                for (runda = 0; runda < 10000000; runda++)                      \
                 for (i = 0; i < 10; i++) TEST_FUNC;                             \
                 end_time = time(NULL);                                          \
                 printf("%s time = %d\n\r",TEST_NAME,end_time-old_time);
