@@ -1,5 +1,8 @@
-#include <iostream>
 #include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+
 	const int table_bin[32][2] = {
 		{0,1},
 		{0,2},
@@ -57,7 +60,7 @@
 /*
 How about basic idea? 
 */
-int atoi_books(const char *astr)
+int atoi_reference(const char *astr)
 {
 // maybe lated :D
 // copy paste whatever you want to compare with!	
@@ -307,6 +310,8 @@ if (count > 0)
 	}
 }
 else return 0; // ERROR handler
+// 
+return result;
 }
 
 /*
@@ -314,14 +319,15 @@ Speed test
 */
 int main(int argc, char** argv) {
 	
-		int TEST_my_result;
+		int TEST_stdlib_result, TEST_my_result;
 		char *TEST_str;
-		
+
 		#define TEST(__ATEST_STR)\
 		TEST_str = __ATEST_STR;\
 		TEST_my_result = atoi_lookup(TEST_str);\
-		printf("%s %d",TEST_str,TEST_my_result);\
-		if (atoi(TEST_str)==TEST_my_result) printf(" - OK\n\r");\
+                TEST_stdlib_result = atoi_reference(TEST_str);\
+		printf("%s %d %d",TEST_str,TEST_stdlib_result, TEST_my_result);\
+		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");\
 		else printf(" - ERROR\n\r");
 		
 		TEST("21")
@@ -330,7 +336,26 @@ int main(int argc, char** argv) {
 		TEST("-323-1")
 		TEST("0x12454")
 		TEST("0b2134234")
-		TEST("21b0xas")		
-		
+		TEST("21b0xas")
+
+                int old_time, end_time, runda;
+
+                char *testy[10] = {"12435567","-121244","0x00233543","0b0101010101010101","0x4134","0xFFFFFFFF","99999999","-999999999","1","dsx120x12"};
+
+                printf("TESTING SPEED MY..\n\r");
+                old_time = time(NULL);
+                for (runda = 0; runda < 20000000; runda++)
+                for (int i = 0; i < 10; i++) atoi(testy[i]);
+                end_time = time(NULL);
+                printf("MY time = %d\n\r",end_time-old_time);
+
+                printf("TESTING SPEED STDLIB...\n\r");
+                old_time = time(NULL);
+                for (runda = 0; runda < 20000000; runda++)
+                for (int i = 0; i < 10; i++) atoi_reference(testy[i]);
+                end_time = time(NULL);
+                printf("STDLIB time = %d\n\r",end_time-old_time);
+
+                system("pause");
 	return 0;
 }
