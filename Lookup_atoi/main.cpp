@@ -112,94 +112,85 @@ enum __format_enum {BIN=0,DEC=1,HEX=2,NON=3} format; // bin,dec,hex;
 format = DEC; //default important enables detection of dec directly or 0x, 0b format preffix
 
 do
-	{ if (str[pos]=='\0') break;
-	  else last++; // lengh++
-
-	  // we could make all letters upper case b->B, x->X and a-f -> A-F here, numbers wont be affected
-	  // we could copy string into buffer but astr is const so we will starting first valid digit!
-	  // 48='0',9 .... 65='A',B,C if lower <48 cant be > 65 dont have time to think about it now.. think?
-
-
-	  if (format==NON) // before we determine format, start with DEC but just trim out first character
+	{ if (str[pos]=='\0')
+            {
+            break; // totally finished here
+            }
+	  if (format==NON) // before we determine format, start with NON but as if it was DEC but just trim out first character
 	  	    {
-	  	    if (str[pos] < base_dec_ascii)
-	  		    { first = pos+1; } // trim invalid char for dec
+  	        if (str[pos] == '-')            // this is for first time, sign negative, format DEC
+                { first = pos+1; format = DEC; negative = true; }
+            else
+	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
+	  	 	    { first = pos+1; }          // trim invalid char for dec
 		    else
-	  	    if (str[pos] > last_dec_ascii)
-	  	 	    { first = pos+1; } // trim invalid char for dec
+	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
+	  		    { first = pos+1; }          // trim invalid char for dec
+            else                            // number is in range 0-9, change to DEC, so next invalid character out of range will this time cause break
+                { first = pos+0; format = DEC; }
+                                            // here ^^ first correct digital number was detected "garbage1324whatever" so change format to DEC
+                                            // do next time if garbage is in string just cut out rest, keep only that first number to process
 		    }
-	  if (format==BIN)
+	  else
+      if (format==DEC) // if we already determined DEC format, any "123bad" character is cut off, break;
 	  	    {
-	  	    if (str[pos] < base_bin_ascii)
-	  		    { last = pos-1; break; }  // trim invalid char for bin
+	        if (str[pos] && 0xDF == 'X') // "0X" = HEX, comparison as upper letters
+	  	        {
+		        if (str[first]=='0')        // 0X scenario, HEX, ignore '-' sign will be deterimed by compliment bits
+		            {
+		   	        negative = false;
+			        format = HEX;
+                    first= pos+1;           // first "0x"=2bytes doesn't represent value, start at next byte
+		            }
+	            else                        // 121x823 scenario, we found "X" but not 0X rather 1234X so format is DEC ends here
+		            {
+   		            last = pos-1;
+			        break;
+		            }
+		        }
+	        if (str[pos] && 0xDF == 'B')    // "0B" = BIN, comparison as upper letters
+                {
+	            if (str[first]=='0')
+		            {
+		            negative = false;
+		            format = BIN;
+                    first= pos+1;           // first "0b"=2bytes doesn't represent value, start at next byte
+		            }
+	            else                        // 123b01010 scenario, we found "B" but not "0B" rather 1234B so format is DEC, ends here
+		            {
+		            last = pos-1;
+                    break;
+		            }
+		        }
+            else
+	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
+	  	 	    { last = pos-1; break; }    // trim invalid char for dec
 		    else
-	  	    if (str[pos] > last_bin_ascii)
-	  	 	    { last = pos-1; break; } // trim invalid char for bin
+	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
+	  		    { last = pos-1; break; }    // trim invalid char for dec
 		    }
-	  if (format==DEC)
+      else
+	  if (format==BIN) // if we passed already "0B" check out ranges of 0B010101 next characters
 	  	    {
-	  	    if (str[pos] < base_dec_ascii)
-	  		    { last = pos-1; break; } // trim invalid char for dec
+	  	    if (str[pos] > last_bin_ascii)  // higher than '1'
+	  	 	    { last = pos-1; break; }    // trim invalid char for bin
 		    else
-	  	    if (str[pos] > last_dec_ascii)
-	  	 	    { last = pos-1; break; } // trim invalid char for dec
+	  	    if (str[pos] < base_bin_ascii)  // lower than '0'
+	  		    { last = pos-1; break; }    // trim invalid char for bin
 		    }
+      else
 	  if (format==HEX)
 	  	    {
-	  	    if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii)
-	  		    { last = pos-1; break; } // trim invalid chars for hex
+	  	    if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) // range between 0-9 and A-F
+	  		    { last = pos-1; break; }    // trim invalid chars for hex
 		    else
-		    if (str[pos] < base_dec_ascii)
-	  		    { last = pos-1; break; } // trim invalid chars for dec (subpart of hex as well)
+		    if (str[pos] < base_dec_ascii)  // lower than '0'
+	  		    { last = pos-1; break; }    // trim invalid chars for dec (subpart of hex as well)
 	  	    else
-		    if (str[pos] > last_hex_ascii)
-	  	 	    { last = pos-1; break; } // trim invalid chars for hex
+		    if (str[pos] > last_hex_ascii)  // higher han 'F'
+	  	 	    { last = pos-1; break; }    // trim invalid chars for hex
 		    }
-	  // HEX, BIN, only if there was already '0' before b or x, also digital '-' sign must be canceled trimed,
-	  // every other scenario its' error in any case! example 0x0x1 or 0xb0 or 1213b or 124x, breaks, make sure first > last so error will be handled
-  	  if (str[pos] == '-')
-            {
-            if (format==DEC)
-                {
-                if (negative==true)
-                    {
-                    first= pos+1; // "-" was detected twice, "-1224-" scenario, stop analysing here just exit
-                    break;
-                    }
-                else
-                    {
-                    negative = true; // "-" for the first time, will be kept only for DEC numbers, skipped for HEX, BIN
-                    }
-                }
-   		    }
-	  if (str[pos] && 0xDF == 'X') // "0X" = HEX, comparison as upper letters
-	  	    {
-		    if (str[first]=='0')
-		        {
-		   	    negative = false;
-			    format = HEX;
-                first= pos+1; // first "0x"=2bytes doesn't represent value, start at next byte
-		        }
-	        else
-		        {
-   		        last = pos-1; // 121x823 scenario, x but not 0x so format is DEC
-			    break;
-		        }
-		    }
-	  if (str[pos] && 0xDF == 'B') // "0B" = BIN, comparison as upper letters
-            {
-	        if (str[first]=='0')
-		        {
-		        negative = false;
-		        format = BIN;
-                first= pos+1; // first "0b"=2bytes doesn't represent value, start at next byte
-		        }
-	        else
-		        {
-		        last = pos-1; // 123b01010 scenario, "b" but not "0b" so format is DEC
-                break;
-		        }
-		    }
+ 	  last++; // lengh++
 	} while (++pos < MY_POS_LIMIT);
 
  switch (format)
