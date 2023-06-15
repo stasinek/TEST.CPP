@@ -108,87 +108,106 @@ int pos = 0, first = 0, last = -1, count = 0, result = 0;
 //if negative sign is detected or first bit 2's complement notation is detected
 // -1 or 0b1000 to 0x1111 HEX or 0x8000 to FFFF.. BIN
 bool negative = false;
-enum __format_enum {BIN=0,DEC=1,HEX=2} format; // bin,dec,hex;
+enum __format_enum {BIN=0,DEC=1,HEX=2,NON=3} format; // bin,dec,hex;
 format = DEC; //default important enables detection of dec directly or 0x, 0b format preffix
 
 do
-	{ if (str[pos]=='\0') break; 
+	{ if (str[pos]=='\0') break;
 	  else last++; // lengh++
 
 	  // we could make all letters upper case b->B, x->X and a-f -> A-F here, numbers wont be affected
-	  // we could copy string into buffer but astr is const so we will starting first valid digit!	  
+	  // we could copy string into buffer but astr is const so we will starting first valid digit!
 	  // 48='0',9 .... 65='A',B,C if lower <48 cant be > 65 dont have time to think about it now.. think?
 
 
+	  if (format==NON) // before we determine format, start with DEC but just trim out first character
+	  	    {
+	  	    if (str[pos] < base_dec_ascii)
+	  		    { first = pos+1; } // trim invalid char for dec
+		    else
+	  	    if (str[pos] > last_dec_ascii)
+	  	 	    { first = pos+1; } // trim invalid char for dec
+		    }
 	  if (format==BIN)
-	  	{	  
-	  	if (str[pos] < base_bin_ascii) 
-	  		{ last = pos; break; }  // trim invalid char for bin
-		else
-	  	if (str[pos] > last_bin_ascii) 
-	  	 	{ last = pos; break; } // trim invalid char for bin
-		}
-	  if (format==DEC)	  
-	  	{
-	  	if (str[pos] < base_dec_ascii) 
-	  		first = pos; // trim invalid char for dec
-		else
-	  	if (str[pos] > last_dec_ascii) 
-	  	 	first = pos; // trim invalid char for dec
-		}
+	  	    {
+	  	    if (str[pos] < base_bin_ascii)
+	  		    { last = pos-1; break; }  // trim invalid char for bin
+		    else
+	  	    if (str[pos] > last_bin_ascii)
+	  	 	    { last = pos-1; break; } // trim invalid char for bin
+		    }
+	  if (format==DEC)
+	  	    {
+	  	    if (str[pos] < base_dec_ascii)
+	  		    { last = pos-1; break; } // trim invalid char for dec
+		    else
+	  	    if (str[pos] > last_dec_ascii)
+	  	 	    { last = pos-1; break; } // trim invalid char for dec
+		    }
 	  if (format==HEX)
-	  	{
-	  	if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) 
-	  		{ last = pos; break; } // trim invalid char for hex
-		else
-		if (str[pos] < base_dec_ascii) 
-	  		{ last = pos; break; } // trim invalid char for dec (subpart of hex as well)
-	  	else
-		if (str[pos] > last_hex_ascii) 
-	  	 	{ last = pos; break; } // trim invalid char for hex
-  	 	
-		}
-
-	  // HEX, BIN, only if there was already '0' before b or x, also digital '-' sign must be canceled trimed, 
+	  	    {
+	  	    if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii)
+	  		    { last = pos-1; break; } // trim invalid chars for hex
+		    else
+		    if (str[pos] < base_dec_ascii)
+	  		    { last = pos-1; break; } // trim invalid chars for dec (subpart of hex as well)
+	  	    else
+		    if (str[pos] > last_hex_ascii)
+	  	 	    { last = pos-1; break; } // trim invalid chars for hex
+		    }
+	  // HEX, BIN, only if there was already '0' before b or x, also digital '-' sign must be canceled trimed,
 	  // every other scenario its' error in any case! example 0x0x1 or 0xb0 or 1213b or 124x, breaks, make sure first > last so error will be handled
-  	  if (str[pos] == '-') { 
-	  	 if (negative==true) break;
-		   else negative = true;  
-   		}
-	  if (str[pos] && 0xDF == 'X') 
-	  	{ 
-		if (str[first]=='0') 
-		   { 
-		   	negative = false; 
-			format = HEX; 
-		   } 
-		   else 
-		   { 
-			first = last+1;
-			break; 
-		   }
-		}   // change format or exit to handle error
-	  if (str[pos] && 0xDF == 'B') 
-	  	{ 
-	  	 if (str[first]=='0')
-		   { 
-		   	negative = false; 
-			format = BIN; 
-			} 
-		else
-			{ 
-			first = last+1; break; 
-			}
-		}   // change format or exit to handle error
-	  pos++;
-	} while (pos < MY_POS_LIMIT); 
+  	  if (str[pos] == '-')
+            {
+            if (format==DEC)
+                {
+                if (negative==true)
+                    {
+                    first= pos+1; // "-" was detected twice, "-1224-" scenario, stop analysing here just exit
+                    break;
+                    }
+                else
+                    {
+                    negative = true; // "-" for the first time, will be kept only for DEC numbers, skipped for HEX, BIN
+                    }
+                }
+   		    }
+	  if (str[pos] && 0xDF == 'X') // "0X" = HEX, comparison as upper letters
+	  	    {
+		    if (str[first]=='0')
+		        {
+		   	    negative = false;
+			    format = HEX;
+                first= pos+1; // first "0x"=2bytes doesn't represent value, start at next byte
+		        }
+	        else
+		        {
+   		        last = pos-1; // 121x823 scenario, x but not 0x so format is DEC
+			    break;
+		        }
+		    }
+	  if (str[pos] && 0xDF == 'B') // "0B" = BIN, comparison as upper letters
+            {
+	        if (str[first]=='0')
+		        {
+		        negative = false;
+		        format = BIN;
+                first= pos+1; // first "0b"=2bytes doesn't represent value, start at next byte
+		        }
+	        else
+		        {
+		        last = pos-1; // 123b01010 scenario, "b" but not "0b" so format is DEC
+                break;
+		        }
+		    }
+	} while (++pos < MY_POS_LIMIT);
 
  switch (format)
-{ 	case DEC: first+=0; // sign wasn't counted as valid number, every digit is first 
-		break;
-	case HEX: first+=2; // first 0x 2 chars have to be skiped  
-	//determine sign here >0x7 is negative
+{ 	case DEC: break;
+	case HEX:
+	//determine sign 0x0000-0x7000 positive, 0x8000-0xF000 is negative
 		switch (str[first]) {
+
 			case '0':
 			case '1':
 			case '2':
@@ -196,9 +215,10 @@ do
 			case '4':
 			case '5':
 			case '6':
-			case '7': 
-			negative = false; 
+			case '7':
+			negative = false;
 			break;
+
 			case '8':
 			case '9':
 			case 'A':
@@ -207,24 +227,24 @@ do
 			case 'D':
 			case 'E':
 			case 'F':
-			negative = true; 
+			negative = true;
 			break;
-			default: 
-			first = last + 1; break; // handle errror we made some mistake! 
+
+			default: return 0; // ERROR we made some mistake!
 			}
 		break;
-	case BIN: first+=2; // furst 0b 2 chars have to be skiped
+	case BIN:
 	// determine sign here
 		switch (str[first]) {
-			case '0': 
+			case '0':
 			negative = false; break;
 			case '1':
 			negative = true; break;
 			default:
-			first = last + 1; break; // handle errror we made some mistake! 
+			first = last + 1; break; // handle errror we made some mistake!
 		}
-	default: 
-	first = last + 1; break; // handle errror we made some mistake! 
+	default:
+	first = last + 1; break; // handle errror we made some mistake!
 }
 // buffer containing essence of string all letters will be upper case, numbers wont be affected
 // we can also rearrange 12345 -> 54321 to make it bit faster compute but wont do that now
