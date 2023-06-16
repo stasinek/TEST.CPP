@@ -302,7 +302,6 @@ if (count > 0)
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos];
-            stripped[0]='0'; // negative bit => 0
 			}
 	break;
 	case HEX:
@@ -311,7 +310,6 @@ if (count > 0)
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
-            stripped[0]=stripped[0] & 0xDF;
 			}
     break;
     default: return 0; // ERROR handler
