@@ -302,7 +302,6 @@ if (count > 0)
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos];
-            stripped[0]='0'; // negative bit => 0
 			}
 	break;
 	case HEX:
@@ -311,7 +310,6 @@ if (count > 0)
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
-            stripped[0]=stripped[0] & 0xDF;
 			}
     break;
     default: return 0; // ERROR handler
@@ -385,13 +383,15 @@ Speed test
 int main(int argc, char** argv) {
 
 		int TEST_stdlib_result, TEST_my_result;
-		char *TEST_str;
+		char *TEST_str,TEST_itoabuff[20];
 
+		printf("TEXT\t\t\tATOI\t\tMY\t\tITOA\n\r");
+		
 		#define TEST(__ATEST_STR)                                       \
 		TEST_str = __ATEST_STR;                                         \
 		TEST_my_result = atoi_lookup(TEST_str);                         \
                 TEST_stdlib_result = atoi_reference(TEST_str);                  \
-		printf("%20s\t%12d\t%12d",TEST_str,TEST_stdlib_result, TEST_my_result); \
+		printf("%12s\t%11d\t%11d\t%12s\t",TEST_str,TEST_stdlib_result, TEST_my_result, itoa(TEST_my_result,TEST_itoabuff,20)); \
 		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
 
