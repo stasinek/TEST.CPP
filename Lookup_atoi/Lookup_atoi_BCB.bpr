@@ -28,12 +28,12 @@
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -a8 -6 -b- -k -y -v -vi- -tWC 
-      -tWM- -c"/>
-    <PFLAGS value="-$YD -$W -$O- -v -JPHNE -M"/>
+    <CFLAG1 value="-Od -H=$(BCB)\lib\vcl50.csm -Hc -Vx -Ve -X- -r- -a8 -6 -b- -k -y -v -vi- 
+      -tWC -tWM- -c"/>
+    <PFLAGS value="-$Y+ -$W -$R -$Q -$O- -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>
-    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <LFLAGS value="-D&quot;&quot; -ap -Tpe -GD -s -Gn -M -v"/>
   </OPTIONS>
   <LINKER>
     <ALLOBJ value="c0x32.obj $(PACKAGES) $(OBJFILES)"/>
@@ -68,6 +68,22 @@ ProductName=
 ProductVersion=1.0.0.0
 Comments=
 
+[HistoryLists\hlIncludePath]
+Count=1
+Item0=$(BCB)\include;$(BCB)\include\vcl
+
+[HistoryLists\hlLibraryPath]
+Count=1
+Item0=..\..\..\..\OBSOLETE\PACKAGES;$(BCB)\lib\obj;$(BCB)\lib
+
+[HistoryLists\hlDebugSourcePath]
+Count=1
+Item0=$(BCB)\source\vcl
+
+[HistoryLists\hlConditionals]
+Count=1
+Item0=_DEBUG
+
 [Debugging]
 DebugSourceDirs=$(BCB)\source\vcl
 
@@ -80,6 +96,6 @@ RemoteDebug=0
 
 [Compiler]
 ShowInfoMsgs=0
-LinkDebugVcl=0
+LinkDebugVcl=1
   </IDEOPTIONS>
 </PROJECT>

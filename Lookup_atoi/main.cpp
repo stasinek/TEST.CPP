@@ -286,43 +286,45 @@ char *stripped_vatch = (char*)stripped;
 // also copy string here to buffer and make it upper case if HEX
 if (count > 0)
 {
-	if (format = DEC)
-	{
+    switch (format)
+    {
+    case DEC:
 		if (count > 10) return 0; // ERROR handler
 		else
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos];
 			}
-	}
-	else
-	if (format = BIN)
-	{
+	break;
+	case BIN:
 		if (count > 32) return 0; // ERROR handler
 		else
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos];
+            stripped[0]='0'; // negative bit => 0
 			}
-	}
-	else
-	if (format = HEX)
-	{
+	break;
+	case HEX:
 		if (count >  8) return 0; // ERROR handler
 		else
 			{
 			for (pos = 0; pos < count; pos++)
 				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
+            stripped[0]=stripped[0] & 0xDF;
 			}
+    break;
+    default: return 0; // ERROR handler
 	}
 }
 else return 0; // ERROR handler
 
 if (count > 0)
 {
-	if (format = DEC)
-	{
-		if (negative)
+    switch (format)
+    {
+    case DEC:
+		if (negative==true)
 			{
 			for (pos = 0; pos < count; pos++)
 				result -= table_dec[pos][ stripped[pos] - base_dec_ascii ];
@@ -332,11 +334,9 @@ if (count > 0)
 			for (pos = 0; pos < count; pos++)
 				result += table_dec[pos][ stripped[pos] - base_dec_ascii ];
 			}
-	}
-	else
-	if (format = BIN)
-	{
-		if (negative)
+	break;
+    case BIN:
+		if (negative==true)
 			{
 			for (pos = 0; pos < count; pos++)
 				result -= table_bin[pos][ stripped[pos] - base_bin_ascii ];
@@ -346,28 +346,31 @@ if (count > 0)
 			for (pos = 0; pos < count; pos++)
 				result += table_bin[pos][ stripped[pos] - base_bin_ascii ];
 			}
-	}
-	else
-	if (format = HEX)
-	{
-		if (negative)
-		for (pos = 0; pos < count; pos++)
-			{
-			if (stripped[pos]>=base_hex_ascii)
-				result -= table_hex[pos][ stripped[pos] - base_hex_ascii ];
-			else 
-				result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
-			}
+	break;
+    case HEX:
+		if (negative==true)
+            {
+		    for (pos = 0; pos < count; pos++)
+                {
+			    if (stripped[pos]>=base_hex_ascii)
+				    result -= table_hex[pos][ 10 + stripped[pos] - base_hex_ascii ];
+			    else
+				    result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
+			    }
+            }
 		else
-			{
-			if (stripped[pos]>=base_hex_ascii)
-				result -= table_hex[pos][ stripped[pos] - base_hex_ascii ];
-			else
-				result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
+            {
+		    for (pos = 0; pos < count; pos++)
+                {
+			    if (stripped[pos]>=base_hex_ascii)
+				    result += table_hex[pos][ 10 + stripped[pos] - base_hex_ascii ];
+			    else
+				    result += table_hex[pos][ stripped[pos] - base_dec_ascii ];
+                }
 			}
-
+    break;
+    }
 	return result;
-	}
 }
 else return 0; // ERROR handler
 //
@@ -392,6 +395,7 @@ int main(int argc, char** argv) {
 		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
 
+		TEST("0x24549ABC")
 		TEST("0b10")
 		TEST("4294967295")
 		TEST("21")
