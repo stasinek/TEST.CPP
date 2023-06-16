@@ -383,13 +383,15 @@ Speed test
 int main(int argc, char** argv) {
 
 		int TEST_stdlib_result, TEST_my_result;
-		char *TEST_str;
+		char *TEST_str,TEST_itoabuff[20];
+
+		printf("TEXT\t\t\tATOI\t\tMY(DEC)\t\tMY(HEX)\n\r");
 
 		#define TEST(__ATEST_STR)                                       \
 		TEST_str = __ATEST_STR;                                         \
 		TEST_my_result = atoi_lookup(TEST_str);                         \
                 TEST_stdlib_result = atoi_reference(TEST_str);                  \
-		printf("%20s\t%12d\t%12d",TEST_str,TEST_stdlib_result, TEST_my_result); \
+		printf("%12s\t%11d\t%11d\t%08x\t",TEST_str,TEST_stdlib_result, TEST_my_result, TEST_my_result); \
 		if (TEST_stdlib_result==TEST_my_result) printf(" - OK\n\r");    \
 		else printf(" - ERROR\n\r");
 
@@ -403,7 +405,7 @@ int main(int argc, char** argv) {
 		TEST("abc-323-1")
 		TEST("0x24549ABC")
 		TEST("0b12134234")
-		TEST("0b001010101010101")
+		TEST("0b0010101010101")
 		TEST("2x2134234")
 		TEST("-21b00x42")
 
