@@ -267,6 +267,11 @@ do
             }
       if (format==DEC) // if we already determined DEC format, any "123bad" character is cut off, break;
 	  	    {
+            if (str[pos] >= base_dec_ascii ? str[pos] <= last_dec_ascii : false)
+                {
+                 last = pos;
+                }                           // OK number is within range
+            else
 	        if ((str[pos] & 0xDF) == 'X')    // "0X" = HEX, comparison as upper letters
 	  	        {
 		        if (str[first]=='0')        // 0X scenario, HEX, ignore '-' sign will be deterimed by compliment bits
@@ -298,29 +303,14 @@ do
                     break;
 		            }
 		        }
-            else
-	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
+            else // higher than '9' nor lower than '0', it's not X, not B, therefore it's invalid character
 	  	 	    {
                  last = pos-1; break;
                 }                           // trim invalid char for dec
-		    else
-	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    {
-                 last = pos-1; break;
-                }                           // trim invalid char for dec
-            else
-                {
-                 last = pos;
-                }                           // number is within range
 		    }
       else
 	  if (format==HEX)
 	  	    {
-	  	    if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) // range between 0-9 and A-F
-	  		    {
-                 last = pos-1; break;
-                }                           // trim invalid chars for hex
-		    else
 		    if (str[pos] < base_dec_ascii)  // lower than '0'
 	  		    {
                  last = pos-1; break;
@@ -330,57 +320,51 @@ do
 	  	 	    {
                  last = pos-1; break;
                 }                           // trim invalid chars for hex
-            else
+	  	    else
+            if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) // one more invalid range between 0-9! and !A-F
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid chars for hex
+		    else
                 {
                  last = pos;
-                }                           // number is within range
+                }                           // number is within range 0-9 or A-F
 		    }
 	  else
       if (format==BIN)                      // if we passed already "0B" check out ranges of 0B010101 next characters
 	  	    {
-	  	    if (str[pos] > last_bin_ascii)  // higher than '1'
-	  	 	    {
-                 last = pos-1; break;
-                }                           // trim invalid char for bin
-		    else
-	  	    if (str[pos] < base_bin_ascii)  // lower than '0'
-	  		    {
-                 last = pos-1; break;
-                }                           // trim invalid char for bin
-            else
+	  	    if (str[pos] >= base_bin_asci ? str[pos] <= last_bin_ascii : false)  // either '0' or '1'
                 {
                  last = pos;
                 }                           // number is within range
+		    else
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid char for bin
 		    }
       else
 	  if (format==NON) // before we determine format, start with NON but as if it was DEC but just trim out first character
 	  	    {
-  	        if (str[pos] == '-')            // this is for first time, sign negative, format DEC
+	  	    if (str[pos] >= base_dec_ascii ? str[pos] <= last_dec_ascii : false)  // within range of '0' - '9'
+               {
+                 first = pos+0; last = pos+0; format = DEC;
+               }
+            else
+  	        if (str[pos] == '-')            //  '-' for first time, sign negative, switch format DEC
                 {
                  first = pos+1; format = DEC; negative = true;
                 }
-            else
-	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
+            else  // there was no good characters yet, invalid, just skip first characters as long necessary
 	  	 	    {
                  first = pos+1;
                 }
-		    else
-	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    {
-                 first = pos+1;
-                }
-            else                            // number is in range 0-9, change to DEC, so next invalid character out of range will this time cause break
-                {
-                 first = pos+0; last = pos+0; format = DEC;
-                }
-                                            // here ^^ first correct digital number was detected "garbage1324whatever" so change format to DEC
-                                            // do next time if garbage is in string just cut out rest, keep only that first number to process
+            // here ^^ first correct digital number was detected "garbage1324whatever" so change format to DEC
+            // do next time if garbage is in string just cut out rest, keep only that first number to process
 		    }
 
 	} while (++pos < MY_POS_LIMIT);
 
-if (format==DEC); else if (format==HEX) negative =  str[first] > '7'; else if (format==BIN) negative =  str[first] > '0';
-
+if (format==DEC); else if (format==HEX) negative =  str[first] > '7'; else if (format==BIN) negative =  str[first] > '0'; else if (format==NON) return 0;
 register int count = last - first + 1, index;
 // check lenght of number, depending on format 11 digits DEC, 32 digits binary, 8 digits HEX is limit 32 bit
 // also copy string here to buffer and make it upper case if HEX
@@ -408,23 +392,6 @@ else
                 }
 			}
 	break;
-    case BIN:
-		if (count > 32) return 0; // ERROR handler
-        if (negative==true)
-			{
-			for (index = 0; index < count;  index++)
-				{
-				 result -= table_bin[index][ str[last-index] - base_bin_ascii ];
-                }
-			}
-		else
-			{
-			for (index = 0; index < count;  index++)
-				{
-				 result += table_bin[index][ str[last-index] - base_bin_ascii ];
-                }
-			}
-	break;
     case HEX:
 		if (count >  8) return 0; // ERROR handler
         if (negative==true)
@@ -446,7 +413,26 @@ else
                 }
 			}
     break;
+    case BIN:
+		if (count > 32) return 0; // ERROR handler
+        if (negative==true)
+			{
+			for (index = 0; index < count;  index++)
+				{
+				 result -= table_bin[index][ str[last-index] - base_bin_ascii ];
+                }
+			}
+		else
+			{
+			for (index = 0; index < count;  index++)
+				{
+				 result += table_bin[index][ str[last-index] - base_bin_ascii ];
+                }
+			}
+	break;
+    default: return 0; // ERROR!
     }
+
 }
 return result;
 }
