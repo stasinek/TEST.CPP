@@ -126,11 +126,12 @@ locale_t loc;
     const char * __restrict nptr = astr;
     char ** __restrict endptr = NULL;        // return ERROR - atoi does not support that
     int base = 10;
-	const char *s;
+
+	register const char *s;
+	register char c;
 	unsigned long acc;
-	char c;
 	unsigned long cutoff;
-	int neg, any, cutlim;
+	int neg, any;
 
 	/*
 	 * Skip white space and pick up leading +/- sign if any.
@@ -181,6 +182,7 @@ locale_t loc;
 	 * Set 'any' if any `digits' consumed; make it negative to indicate
 	 * overflow.
 	 */
+    int cutlim;
 	cutoff = neg ? (unsigned long)-(LONG_MIN + LONG_MAX) + LONG_MAX
 	    : LONG_MAX;
 	cutlim = cutoff % base;
@@ -229,17 +231,13 @@ int atoi_lookup(const char *astr)
    and + HEX 8 or DEC 10 or BIN 32 digits = 11-34 bytes string 
  if you want filter out more, trim mush allow higher limit or even no limits */
 
-// on 32bit platform parameters are send via stack,
-// this allow str to be put into register
-const char *str = astr;
-
 // determine valid ranges of characters 0-9, A-F
-const char base_bin_ascii = '0';
-const char last_bin_ascii = '1';
-const char base_dec_ascii = '0'; // valid both for HEX and DEC! 48='0'
-const char last_dec_ascii = '9'; // valid both for HEX and DEC! 58='9'
-const char base_hex_ascii = 'A'; // 65 = 'A'
-const char last_hex_ascii = 'F'; // 70 = 'F'
+static const char base_bin_ascii = '0';
+static const char last_bin_ascii = '1';
+static const char base_dec_ascii = '0'; // valid both for HEX and DEC! 48='0'
+static const char last_dec_ascii = '9'; // valid both for HEX and DEC! 58='9'
+static const char base_hex_ascii = 'A'; // 65 = 'A'
+static const char last_hex_ascii = 'F'; // 70 = 'F'
 /*
  const char base_hex_ascii = 'a'; // 97 = 'a'
  const char last_hex_ascii = 'f'; // 102 = 'f'
@@ -251,12 +249,15 @@ const char last_hex_ascii = 'F'; // 70 = 'F'
 
 // current position, first valid number char starts here, last valid number char ends here
 // first >= last means there is no valid number anywhere in string, even single digit!
-int pos = 0, first = 0, last = -1, count = 0, result = 0;
-
+// on 32bit platform parameters are send via stack,
+// this allow str to be put into register
+register const char *str = astr;
+register int pos = 0, first = 0, last = -1;
+int result = 0;
+bool negative = false;
 //if negative sign is detected or first bit 2's complement notation is detected
 // -1 or 0b1000 to 0x1111 HEX or 0x8000 to FFFF.. BIN
-bool negative = false;
-enum __format_enum {BIN=0,DEC=1,HEX=2,NON=3} format; // bin,dec,hex;
+register enum __format_enum {BIN=0,DEC=1,HEX=2,NON=3} format; // bin,dec,hex;
 format = NON; //default important enables detection of dec directly or 0x, 0b format preffix
 
 do
@@ -425,101 +426,68 @@ do
 	default:
 	first = last + 1; break; // handle errror we made some mistake!
 }
-// buffer containing essence of string all letters will be upper case, numbers wont be affected
-// we can also rearrange 12345 -> 54321 to make it bit faster compute but wont do that now
-count = last - first + 1;
-char stripped[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-char *stripped_vatch = (char*)stripped;
+register int count = last - first + 1, index;
 // check lenght of number, depending on format 11 digits DEC, 32 digits binary, 8 digits HEX is limit 32 bit
 // also copy string here to buffer and make it upper case if HEX
-if (count > 0)
+if (count <= 0) return 0; // ERROR handler
+else
 {
     switch (format)
     {
     case DEC:
 		if (count > 10) return 0; // ERROR handler
-		else
+        if (negative==true)
 			{
-			for (pos = 0; pos < count; pos++)
-				stripped[pos] = str[last-pos];
-			}
-	break;
-	case BIN:
-		if (count > 32) return 0; // ERROR handler
-		else
-			{
-			for (pos = 0; pos < count; pos++)
-				stripped[pos] = str[last-pos];
-			}
-	break;
-	case HEX:
-		if (count >  8) return 0; // ERROR handler
-		else
-			{
-			for (pos = 0; pos < count; pos++)
-				stripped[pos] = str[last-pos] & 0xDF; // UPPER case, clear bit 5(-32)
-			}
-    break;
-    default: return 0; // ERROR handler
-	}
-}
-else return 0; // ERROR handler
+            // reverse order higher index higher base number, but we start from left pos=first(1)  12345 to finish last 5,
+            // we must start highest index number in the table, highest index bigger the base, last 5 is lowest value to add, lowest index = 0;
+			for (pos = last, index = 0; index < count;  pos--, index++)
 
-if (count > 0)
-{
-    switch (format)
-    {
-    case DEC:
-		if (negative==true)
-			{
-			for (pos = 0; pos < count; pos++)
-				result -= table_dec[pos][ stripped[pos] - base_dec_ascii ];
+				result -= table_dec[index][ str[pos] - base_dec_ascii ];
 			}
 		else
 			{
-			for (pos = 0; pos < count; pos++)
-				result += table_dec[pos][ stripped[pos] - base_dec_ascii ];
+			for (pos = last, index = 0; index < count;  pos--, index++)
+				result += table_dec[index][ str[pos] - base_dec_ascii ];
 			}
 	break;
     case BIN:
-		if (negative==true)
+		if (count > 32) return 0; // ERROR handler
+        if (negative==true)
 			{
-			for (pos = 0; pos < count; pos++)
-				result -= table_bin[pos][ stripped[pos] - base_bin_ascii ];
+			for (pos = last, index = 0; index < count;  pos--, index++)
+				result -= table_bin[index][ str[pos] - base_bin_ascii ];
 			}
 		else
 			{
-			for (pos = 0; pos < count; pos++)
-				result += table_bin[pos][ stripped[pos] - base_bin_ascii ];
+			for (pos = last, index = 0; index < count;  pos--, index++)
+				result += table_bin[index][ str[pos] - base_bin_ascii ];
 			}
 	break;
     case HEX:
-		if (negative==true)
+		if (count >  8) return 0; // ERROR handler
+        if (negative==true)
             {
-		    for (pos = 0; pos < count; pos++)
+			for (pos = last, index = 0; index < count;  pos--, index++)
                 {
-			    if (stripped[pos]>=base_hex_ascii)
-				    result -= table_hex[pos][ 10 + stripped[pos] - base_hex_ascii ];
+			    if (str[pos]>=base_hex_ascii)
+				    result -= table_hex[index][ 10 + str[pos] - base_hex_ascii ];
 			    else
-				    result -= table_hex[pos][ stripped[pos] - base_dec_ascii ];
+				    result -= table_hex[index][ str[pos] - base_dec_ascii ];
 			    }
             }
 		else
             {
-		    for (pos = 0; pos < count; pos++)
+			for (pos = last, index = 0; index < count;  pos--, index++)
                 {
-			    if (stripped[pos]>=base_hex_ascii)
-				    result += table_hex[pos][ 10 + stripped[pos] - base_hex_ascii ];
+			    if (str[pos]>=base_hex_ascii)
+				    result += table_hex[index][ 10 + str[pos] - base_hex_ascii ];
 			    else
-				    result += table_hex[pos][ stripped[pos] - base_dec_ascii ];
+				    result += table_hex[index][ str[pos] - base_dec_ascii ];
                 }
 			}
     break;
     }
-	return result;
 }
-else return 0; // ERROR handler
-//
 return result;
 }
 // -----------------------------------------------------------------------------
@@ -590,6 +558,8 @@ int main(int argc, char** argv) {
 
                 printf("Relative speed, lower is faster, STDLIB=100%% APPLE=%d%% LOOKUP=%d%%",
                             (reference_time*100)/stdlib_time,(my_time*100)/stdlib_time);
+                printf("\n\r");
+                
                 system("pause");
 
 	return 0;
