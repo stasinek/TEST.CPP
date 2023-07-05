@@ -271,8 +271,8 @@ do
                 {
                  last = pos;
                 }                           // OK number is within range
-            else
-	        if ((str[pos] & 0xDF) == 'X')    // "0X" = HEX, comparison as upper letters
+            else                            // EXCEPTIONS AS FOLLOWS
+	        if ((str[pos] & 0xDF) == 'X')   // "0X" = HEX, comparison as upper letters
 	  	        {
 		        if (str[first]=='0')        // 0X scenario, HEX, ignore '-' sign will be deterimed by compliment bits
 		            {
@@ -303,7 +303,7 @@ do
                     break;
 		            }
 		        }
-            else // higher than '9' nor lower than '0', it's not X, not B, therefore it's invalid character
+            else // END OF EXCEPTIONS LIST, higher than '9' nor lower than '0', it's not X, not B, therefore it's invalid character
 	  	 	    {
                  last = pos-1; break;
                 }                           // trim invalid char for dec
@@ -311,29 +311,24 @@ do
       else
 	  if (format==HEX)
 	  	    {
-		    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    {
-                 last = pos-1; break;
-                }                           // trim invalid chars for dec (subpart of hex as well)
-	  	    else
-		    if (str[pos] > last_hex_ascii)  // higher han 'F'
-	  	 	    {
-                 last = pos-1; break;
-                }                           // trim invalid chars for hex
-	  	    else
-            if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) // one more invalid range between 0-9! and !A-F
-	  		    {
-                 last = pos-1; break;
-                }                           // trim invalid chars for hex
-		    else
+	  	    if ((str[pos]) >= base_dec_ascii ? (str[pos]) <= last_dec_ascii : false)  // within range of '0' - '9'
                 {
                  last = pos;
-                }                           // number is within range 0-9 or A-F
-		    }
+                }                           // number is within range
+            else
+	  	    if ((str[pos] & 0xDF) >= base_hex_ascii ? (str[pos] & 0xDF) <= last_hex_ascii : false)  // within range of 'A' - 'F'
+                {
+                 last = pos;
+                }                           // number is within range
+            else
+   	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid chars
+            }
 	  else
       if (format==BIN)                      // if we passed already "0B" check out ranges of 0B010101 next characters
 	  	    {
-	  	    if (str[pos] >= base_bin_asci ? str[pos] <= last_bin_ascii : false)  // either '0' or '1'
+	  	    if (str[pos] >= base_bin_ascii ? str[pos] <= last_bin_ascii : false)  // either '0' or '1'
                 {
                  last = pos;
                 }                           // number is within range
@@ -364,10 +359,9 @@ do
 
 	} while (++pos < MY_POS_LIMIT);
 
-if (format==DEC); else if (format==HEX) negative =  str[first] > '7'; else if (format==BIN) negative =  str[first] > '0'; else if (format==NON) return 0;
+if (format==DEC); else if (format==HEX) negative = str[first] > '7'; else if (format==BIN) negative =  str[first] > '0'; else if (format==NON) return 0;
 register int count = last - first + 1, index;
 // check lenght of number, depending on format 11 digits DEC, 32 digits binary, 8 digits HEX is limit 32 bit
-// also copy string here to buffer and make it upper case if HEX
 if (count <= 0) return 0; // ERROR handler
 else
 {
@@ -398,7 +392,7 @@ else
             {
 			for (index = 0; index < count;  index++)
 				{
-			    if (str[last-index] >= base_hex_ascii) result -= table_hex[index][ 10 + str[last-index] - base_hex_ascii ];
+			    if (str[last-index] >= base_hex_ascii) result -= table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
 			    else
 				    result -= table_hex[index][ str[last-index] - base_dec_ascii ];
 			    }
@@ -407,7 +401,7 @@ else
             {
 			for (index = 0; index < count;  index++)
                 {
-			    if (str[last-index] >= base_hex_ascii) result += table_hex[index][ 10 +str[last-index] - base_hex_ascii ];
+			    if (str[last-index] >= base_hex_ascii) result += table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
 			    else
 				    result += table_hex[index][ str[last-index] - base_dec_ascii ];
                 }
