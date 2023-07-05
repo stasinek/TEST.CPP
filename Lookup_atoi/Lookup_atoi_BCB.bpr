@@ -28,8 +28,8 @@
     <WARNINGS value="-w-par"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Q -Vx -Ve -xf -xp -VF -C -ff -X- -a8 -6 
-      -b- -d -k -y -v -vi- -tWC -tWM- -c"/>
+    <CFLAG1 value="-O2 -H=$(BCB)\lib\vcl50.csm -Hc -Q -Vx -Ve -xf -xp -VF -C -ff -X- -rd -a8 
+      -6 -b- -d -k -y -v -vi- -tWC -tWM- -c"/>
     <PFLAGS value="-$Y+ -$W -$R -$Q -v -JPHNE -M"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>

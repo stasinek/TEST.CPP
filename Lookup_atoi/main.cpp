@@ -288,7 +288,7 @@ do
 		            }
 		        }
             else
-	        if ((str[pos] & 0xDF) == 'B')    // "0B" = BIN, comparison as upper letters
+	        if ((str[pos] & 0xDF) == 'B')    // "0B" = BIN, comparison as upper letters,  ignore '-' sign will be deterimed by compliment bits
                 {
 	            if (str[first]=='0')
 		            {
@@ -392,7 +392,7 @@ else
             {
 			for (index = 0; index < count;  index++)
 				{
-			    if (str[last-index] >= base_dec_ascii) result -= table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
+			    if (str[last-index] > last_dec_ascii) result -= table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
 			    else
 				    result -= table_hex[index][ str[last-index] - base_dec_ascii ];
 			    }
@@ -401,7 +401,7 @@ else
             {
 			for (index = 0; index < count;  index++)
                 {
-			    if (str[last-index] >= base_dec_ascii) result += table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
+			    if (str[last-index] > last_dec_ascii) result += table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
 			    else
 				    result += table_hex[index][ str[last-index] - base_dec_ascii ];
                 }
