@@ -49,6 +49,8 @@ Makefile.win
 *(from *).*
 *[Conflict].*
 *.drc
+*.layout
+*.pnws
 # ---------------- Editor's IDE backups
 *.bak
 *.~*
@@ -195,3 +197,7 @@ Win32/*.*
 *.log
 *.err
 *.lastbuildstate
+
+# MEGA Sync
+*.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].*
+* ([0-9]).*

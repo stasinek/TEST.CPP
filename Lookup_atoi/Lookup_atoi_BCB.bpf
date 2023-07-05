@@ -1,4 +1,5 @@
 USEUNIT("main.cpp");
+USERES("Lookup_atoi_BCB.res");
 //---------------------------------------------------------------------------
 This file is used by the project manager only and should be treated like the project file
 

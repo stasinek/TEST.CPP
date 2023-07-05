@@ -232,12 +232,12 @@ int atoi_lookup(const char *astr)
  if you want filter out more, trim mush allow higher limit or even no limits */
 
 // determine valid ranges of characters 0-9, A-F
-static const char base_bin_ascii = '0';
-static const char last_bin_ascii = '1';
-static const char base_dec_ascii = '0'; // valid both for HEX and DEC! 48='0'
-static const char last_dec_ascii = '9'; // valid both for HEX and DEC! 58='9'
-static const char base_hex_ascii = 'A'; // 65 = 'A'
-static const char last_hex_ascii = 'F'; // 70 = 'F'
+const char base_bin_ascii = '0';
+const char last_bin_ascii = '1';
+const char base_dec_ascii = '0'; // valid both for HEX and DEC! 48='0'
+const char last_dec_ascii = '9'; // valid both for HEX and DEC! 58='9'
+const char base_hex_ascii = 'A'; // 65 = 'A'
+const char last_hex_ascii = 'F'; // 70 = 'F'
 /*
  const char base_hex_ascii = 'a'; // 97 = 'a'
  const char last_hex_ascii = 'f'; // 102 = 'f'
@@ -378,53 +378,19 @@ do
 		    }
 	} while (++pos < MY_POS_LIMIT);
 
- switch (format)
+switch (format)
 { 	case DEC:
     break;
 	case BIN:
 	// determine sign here
-		switch (str[first]) {
-			case '0':
-			negative = false;
-            break;
-			case '1':
-			negative = true;
-            break;
-			default:
-			return 0; // handle ERROR we made some mistake!
-		}
+    negative =  str[first] > '0';
     break;
 	case HEX:
 	//determine sign 0x0000-0x7000 positive, 0x8000-0xF000 is negative
-		switch (str[first]) {
-
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			negative = false;
-			break;
-
-			case '8':
-			case '9':
-			case 'A':
-			case 'B':
-			case 'C':
-			case 'D':
-			case 'E':
-			case 'F':
-			negative = true;
-			break;
-
-			default: return 0; // ERROR we made some mistake!
-			}
-		break;
+    negative =  str[first] > '7';
+	break;
 	default:
-	first = last + 1; break; // handle errror we made some mistake!
+	return 0; // ERROR we made some mistake!
 }
 register int count = last - first + 1, index;
 // check lenght of number, depending on format 11 digits DEC, 32 digits binary, 8 digits HEX is limit 32 bit
@@ -440,49 +406,54 @@ else
 			{
             // reverse order higher index higher base number, but we start from left pos=first(1)  12345 to finish last 5,
             // we must start highest index number in the table, highest index bigger the base, last 5 is lowest value to add, lowest index = 0;
-			for (pos = last, index = 0; index < count;  pos--, index++)
-
-				result -= table_dec[index][ str[pos] - base_dec_ascii ];
+			for (index = 0; index < count;  index++)
+				{
+                 result -= table_dec[index][ str[last-index] - base_dec_ascii ];
+                }
 			}
 		else
 			{
-			for (pos = last, index = 0; index < count;  pos--, index++)
-				result += table_dec[index][ str[pos] - base_dec_ascii ];
+			for (index = 0; index < count;  index++)
+				{
+				 result += table_dec[index][ str[last-index] - base_dec_ascii ];
+                }
 			}
 	break;
     case BIN:
 		if (count > 32) return 0; // ERROR handler
         if (negative==true)
 			{
-			for (pos = last, index = 0; index < count;  pos--, index++)
-				result -= table_bin[index][ str[pos] - base_bin_ascii ];
+			for (index = 0; index < count;  index++)
+				{
+				 result -= table_bin[index][ str[last-index] - base_bin_ascii ];
+                }
 			}
 		else
 			{
-			for (pos = last, index = 0; index < count;  pos--, index++)
-				result += table_bin[index][ str[pos] - base_bin_ascii ];
+			for (index = 0; index < count;  index++)
+				{
+				 result += table_bin[index][ str[last-index] - base_bin_ascii ];
+                }
 			}
 	break;
     case HEX:
 		if (count >  8) return 0; // ERROR handler
         if (negative==true)
             {
-			for (pos = last, index = 0; index < count;  pos--, index++)
-                {
-			    if (str[pos]>=base_hex_ascii)
-				    result -= table_hex[index][ 10 + str[pos] - base_hex_ascii ];
+			for (index = 0; index < count;  index++)
+				{
+			    if (str[last-index] >= base_hex_ascii) result -= table_hex[index][ 10 + str[last-index] - base_hex_ascii ];
 			    else
-				    result -= table_hex[index][ str[pos] - base_dec_ascii ];
+				    result -= table_hex[index][ str[last-index] - base_dec_ascii ];
 			    }
             }
 		else
             {
-			for (pos = last, index = 0; index < count;  pos--, index++)
+			for (index = 0; index < count;  index++)
                 {
-			    if (str[pos]>=base_hex_ascii)
-				    result += table_hex[index][ 10 + str[pos] - base_hex_ascii ];
+			    if (str[last-index] >= base_hex_ascii) result += table_hex[index][ 10 +str[last-index] - base_hex_ascii ];
 			    else
-				    result += table_hex[index][ str[pos] - base_dec_ascii ];
+				    result += table_hex[index][ str[last-index] - base_dec_ascii ];
                 }
 			}
     break;
