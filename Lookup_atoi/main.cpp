@@ -392,7 +392,7 @@ else
             {
 			for (index = 0; index < count;  index++)
 				{
-			    if (str[last-index] >= base_hex_ascii) result -= table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
+			    if (str[last-index] >= base_dec_ascii) result -= table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
 			    else
 				    result -= table_hex[index][ str[last-index] - base_dec_ascii ];
 			    }
@@ -401,7 +401,7 @@ else
             {
 			for (index = 0; index < count;  index++)
                 {
-			    if (str[last-index] >= base_hex_ascii) result += table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
+			    if (str[last-index] >= base_dec_ascii) result += table_hex[index][ 10 + (str[last-index] & 0xDF) - base_hex_ascii ];
 			    else
 				    result += table_hex[index][ str[last-index] - base_dec_ascii ];
                 }
