@@ -265,30 +265,6 @@ do
             {
             break; // totally finished here
             }
-	  if (format==NON) // before we determine format, start with NON but as if it was DEC but just trim out first character
-	  	    {
-  	        if (str[pos] == '-')            // this is for first time, sign negative, format DEC
-                {
-                 first = pos+1; format = DEC; negative = true;
-                }
-            else
-	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
-	  	 	    {
-                 first = pos+1;
-                }
-		    else
-	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
-	  		    {
-                 first = pos+1;
-                }
-            else                            // number is in range 0-9, change to DEC, so next invalid character out of range will this time cause break
-                {
-                 first = pos+0; last = pos+0; format = DEC;
-                }
-                                            // here ^^ first correct digital number was detected "garbage1324whatever" so change format to DEC
-                                            // do next time if garbage is in string just cut out rest, keep only that first number to process
-		    }
-	  else
       if (format==DEC) // if we already determined DEC format, any "123bad" character is cut off, break;
 	  	    {
 	        if ((str[pos] & 0xDF) == 'X')    // "0X" = HEX, comparison as upper letters
@@ -338,23 +314,6 @@ do
                 }                           // number is within range
 		    }
       else
-	  if (format==BIN)                      // if we passed already "0B" check out ranges of 0B010101 next characters
-	  	    {
-	  	    if (str[pos] > last_bin_ascii)  // higher than '1'
-	  	 	    {
-                 last = pos-1; break;
-                }                           // trim invalid char for bin
-		    else
-	  	    if (str[pos] < base_bin_ascii)  // lower than '0'
-	  		    {
-                 last = pos-1; break;
-                }                           // trim invalid char for bin
-            else
-                {
-                 last = pos;
-                }                           // number is within range
-		    }
-      else
 	  if (format==HEX)
 	  	    {
 	  	    if (str[pos] > last_dec_ascii && str[pos] < base_hex_ascii) // range between 0-9 and A-F
@@ -376,22 +335,52 @@ do
                  last = pos;
                 }                           // number is within range
 		    }
+	  else
+      if (format==BIN)                      // if we passed already "0B" check out ranges of 0B010101 next characters
+	  	    {
+	  	    if (str[pos] > last_bin_ascii)  // higher than '1'
+	  	 	    {
+                 last = pos-1; break;
+                }                           // trim invalid char for bin
+		    else
+	  	    if (str[pos] < base_bin_ascii)  // lower than '0'
+	  		    {
+                 last = pos-1; break;
+                }                           // trim invalid char for bin
+            else
+                {
+                 last = pos;
+                }                           // number is within range
+		    }
+      else
+	  if (format==NON) // before we determine format, start with NON but as if it was DEC but just trim out first character
+	  	    {
+  	        if (str[pos] == '-')            // this is for first time, sign negative, format DEC
+                {
+                 first = pos+1; format = DEC; negative = true;
+                }
+            else
+	  	    if (str[pos] > last_dec_ascii)  // higher than '9'
+	  	 	    {
+                 first = pos+1;
+                }
+		    else
+	  	    if (str[pos] < base_dec_ascii)  // lower than '0'
+	  		    {
+                 first = pos+1;
+                }
+            else                            // number is in range 0-9, change to DEC, so next invalid character out of range will this time cause break
+                {
+                 first = pos+0; last = pos+0; format = DEC;
+                }
+                                            // here ^^ first correct digital number was detected "garbage1324whatever" so change format to DEC
+                                            // do next time if garbage is in string just cut out rest, keep only that first number to process
+		    }
+
 	} while (++pos < MY_POS_LIMIT);
 
-switch (format)
-{ 	case DEC:
-    break;
-	case BIN:
-	// determine sign here
-    negative =  str[first] > '0';
-    break;
-	case HEX:
-	//determine sign 0x0000-0x7000 positive, 0x8000-0xF000 is negative
-    negative =  str[first] > '7';
-	break;
-	default:
-	return 0; // ERROR we made some mistake!
-}
+if (format==DEC); else if (format==HEX) negative =  str[first] > '7'; else if (format==BIN) negative =  str[first] > '0';
+
 register int count = last - first + 1, index;
 // check lenght of number, depending on format 11 digits DEC, 32 digits binary, 8 digits HEX is limit 32 bit
 // also copy string here to buffer and make it upper case if HEX
