@@ -1,0 +1,21 @@
+[Project]
+FileName=D:\Programming\Programming\Dev-C++ projects\OpenGLstruct\OpenGLstruct.dev
+Name=OpenGL
+Use_gpp=1
+UnitCount=2
+ResFiles=D:\Programming\Programming\Dev-C++ projects\OpenGLstruct\rsrc.rc
+NoConsole=1
+IsDll=0
+Icon=D:\Dev-C++\Icon\Console.ico
+CompilerOptions=
+IncludeDirs=
+ObjFile=-lopengl32
+
+[Unit1]
+FileName=D:\Programming\Programming\Dev-C++ projects\OpenGLstruct\main.cpp
+FileTime=752261380
+
+[Unit2]
+FileName=D:\Programming\Programming\Dev-C++ projects\OpenGLstruct\main.h
+FileTime=719020502
+
